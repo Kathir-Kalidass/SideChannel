@@ -7,6 +7,39 @@ This project provides a full local security-lab simulator with:
 - React dashboard for control, charts, AI risk, and defense status
 - Multi-algorithm simulation: AES, ChaCha20, RSA, ECC
 
+## Prerequisites and required installs
+
+To run this project, install these tools first:
+
+- Python 3.10+
+- Node.js 18+ and npm
+- Docker and Docker Compose (recommended for PostgreSQL)
+
+PostgreSQL requirement:
+
+- PostgreSQL is required by the backend.
+- Recommended path: use Docker Compose from this repo (no manual local PostgreSQL install needed).
+- The stack maps PostgreSQL to host port 5433.
+
+Dependency install notes:
+
+- Backend Python packages are installed from `backend/requirements.txt`.
+- Frontend packages are installed with npm using `frontend/package.json`.
+- `./scripts/start_stack.sh` automatically installs missing backend and frontend dependencies when needed.
+
+Optional manual install commands:
+
+```bash
+./scripts/setup_backend.sh
+cd frontend && npm install
+```
+
+Then start everything with:
+
+```bash
+./scripts/start_stack.sh
+```
+
 ## One-command stack operations
 
 ### Start everything (DB + backend + frontend)
