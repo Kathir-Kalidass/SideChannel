@@ -169,6 +169,13 @@ class TraceService:
                 )
             ).scalar_one_or_none()
 
+        if sender:
+            self._ensure_profile_defaults(sender)
+        if receiver:
+            self._ensure_profile_defaults(receiver)
+        if pair:
+            self._ensure_pair_defaults(pair)
+
         sender_multiplier = sender.risk_multiplier if sender else 1.0
         receiver_multiplier = receiver.risk_multiplier if receiver else 1.0
         pair_multiplier = pair.pair_risk_multiplier if pair else 1.0
@@ -417,6 +424,7 @@ class TraceService:
         self._apply_pair_policy_update(pair_policy, record)
 
     def _apply_profile_update(self, profile: UserRiskProfile, record: PaymentRecord) -> None:
+        self._ensure_profile_defaults(profile)
         alpha = 0.22
         event_score = self._event_score(record)
         profile.total_transactions += 1
@@ -434,6 +442,7 @@ class TraceService:
         profile.risk_multiplier = max(0.8, min(1.9, multiplier))
 
     def _apply_pair_policy_update(self, pair: PairRiskPolicy, record: PaymentRecord) -> None:
+        self._ensure_pair_defaults(pair)
         alpha = 0.2
         event_score = self._event_score(record)
         pair.total_transactions += 1
@@ -463,3 +472,33 @@ class TraceService:
         elif record.decision == "OTP":
             base += 0.08
         return max(0.0, min(1.0, base))
+
+    @staticmethod
+    def _ensure_profile_defaults(profile: UserRiskProfile) -> None:
+        if profile.drift_score is None:
+            profile.drift_score = 0.0
+        if profile.risk_multiplier is None:
+            profile.risk_multiplier = 1.0
+        if profile.blocked_rate is None:
+            profile.blocked_rate = 0.0
+        if profile.otp_rate is None:
+            profile.otp_rate = 0.0
+        if profile.theft_rate is None:
+            profile.theft_rate = 0.0
+        if profile.total_transactions is None:
+            profile.total_transactions = 0
+
+    @classmethod
+    def _ensure_pair_defaults(cls, pair: PairRiskPolicy) -> None:
+        if pair.pair_risk_multiplier is None:
+            pair.pair_risk_multiplier = 1.0
+        if pair.block_threshold is None:
+            pair.block_threshold = cls._DEFAULT_THRESHOLDS["block_threshold"]
+        if pair.otp_threshold is None:
+            pair.otp_threshold = cls._DEFAULT_THRESHOLDS["otp_threshold"]
+        if pair.leakage_block_threshold is None:
+            pair.leakage_block_threshold = cls._DEFAULT_THRESHOLDS["leakage_block_threshold"]
+        if pair.leakage_otp_threshold is None:
+            pair.leakage_otp_threshold = cls._DEFAULT_THRESHOLDS["leakage_otp_threshold"]
+        if pair.total_transactions is None:
+            pair.total_transactions = 0

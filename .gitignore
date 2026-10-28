@@ -15,3 +15,7 @@ coverage/
 data/*.csv
 data/*.joblib
 !data/.gitkeep
+
+# Local environment and runtime state
+.env
+.run/
